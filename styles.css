@@ -1,0 +1,43 @@
+#yt-shot-labeler-panel {
+  transition: box-shadow 0.2s;
+  cursor:default;
+}
+#yt-shot-labeler-panel:hover {
+  box-shadow: 0 8px 32px #0005;
+}
+#yt-shot-labeler-panel button {
+  background: #eee;
+  border: 1px solid #888;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 4px 12px;
+  margin-right: 4px;
+  margin-bottom: 3px;
+  font-size: 13px;
+}
+#yt-shot-labeler-panel button:active,
+#yt-shot-labeler-panel .yt-shot-labeler-label-btn:active {
+  background: #b2d7ff;
+}
+#yt-shot-labeler-panel .yt-shot-labeler-label-btn {
+  background: #f4f7fa;
+  border: 1px solid #a7bedc;
+  color: #23395d;
+}
+#yt-shot-labeler-panel .yt-shot-labeler-label-btn.selected {
+  background: #b2d7ff;
+}
+#yt-shot-labeler-panel #yt-shot-labeler-close {
+  color: #888;
+  font-weight: bold;
+}
+#yt-shot-labeler-panel #yt-shot-labeler-close:hover {
+  color: #c00;
+  background: #eee;
+}
+#yt-shot-labeler-panel .yt-shot-labeler-delete {
+  color: #a00;
+}
+#yt-shot-labeler-panel .yt-shot-labeler-delete:hover {
+  background: #ffeaea;
+}
