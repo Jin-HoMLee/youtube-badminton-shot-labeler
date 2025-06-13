@@ -1,10 +1,10 @@
-// YouTube Shot Labeler: content script
+// YouTube Shot Labeler: content script with scrollable panel and fixed header
 const PANEL_ID = 'yt-shot-labeler-panel';
 
 // Utility to format date/time as YYYY-MM-DD HH:MM:SS
 function formatDateTime(dt) {
   const pad = (n) => n.toString().padStart(2, '0');
-  return `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())} ${pad(dt.getHours())}:${pad(dt.getMinutes())}:${pad(dt.getSeconds())}`;
+  return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())} ${pad(dt.getHours())}:${pad(dt.getMinutes())}:${pad(dt.getSeconds())}`;
 }
 
 // Utility to sanitize folder/file names
@@ -45,7 +45,7 @@ function createLabelerPanel() {
 
   const SHOT_LABELS = ["net shot", "lift", "clear", "smash", "drop", "drive", "block"];
   let shots = [];
-  let currentShot = {start: null, end: null, label: null};
+  let currentShot = { start: null, end: null, label: null };
 
   // Top info
   const now = new Date();
@@ -58,25 +58,47 @@ function createLabelerPanel() {
   const panel = document.createElement('div');
   panel.id = PANEL_ID;
   panel.innerHTML = `
-    <div id="yt-shot-labeler-header" style="cursor:move;user-select:none;">
+    <div id="yt-shot-labeler-header" class="yt-shot-labeler-section-title">
       <button id="yt-shot-labeler-close" title="Close" style="float:right;background:transparent;border:none;font-size:18px;cursor:pointer;">×</button>
       <strong style="font-size:16px;">YouTube Shot Labeler</strong>
     </div>
-    <div id="yt-shot-labeler-info" style="font-size:12px;line-height:1.4;margin:7px 0 10px 0;">
-      <div><b>Date/Time:</b> <span id="yt-shot-labeler-datetime">${dateTimeStr}</span></div>
-      <div><b>Video Title:</b> <span id="yt-shot-labeler-videotitle">${videoTitle}</span></div>
-      <div style="max-width:310px;word-break:break-all;"><b>URL:</b> <span id="yt-shot-labeler-url">${videoUrl}</span></div>
+    <div id="yt-shot-labeler-content">
+      <hr>
+      <div class="yt-shot-labeler-section">
+        <div class="yt-shot-labeler-section-title">Video Details</div>
+        <div class="yt-shot-labeler-info">
+          <div><b>Date/Time:</b> <span id="yt-shot-labeler-datetime">${dateTimeStr}</span></div>
+          <div><b>Video Title:</b> <span id="yt-shot-labeler-videotitle">${videoTitle}</span></div>
+          <div style="max-width:310px;word-break:break-all;"><b>URL:</b> <span id="yt-shot-labeler-url">${videoUrl}</span></div>
+        </div>
+      </div>
+      <hr>
+      <div class="yt-shot-labeler-section">
+        <div class="yt-shot-labeler-section-title">Load Existing Labels</div>
+        <button id="load-csv" style="margin-bottom:10px;">Load existing CSV</button>
+        <input type="file" id="csv-file-input" accept=".csv" style="display:none;">
+      </div>
+      <hr>
+      <div class="yt-shot-labeler-section">
+        <div class="yt-shot-labeler-section-title">Label a Shot</div>
+        <div style="margin:8px 0;">
+          <button id="mark-start">Mark Start</button>
+          <span id="shot-status" style="margin-left:10px;"></span>
+        </div>
+        <div id="label-buttons" style="margin-bottom:10px;"></div>
+        <button id="mark-end" style="margin-bottom:10px;">Mark End</button>
+      </div>
+      <hr>
+      <div class="yt-shot-labeler-section">
+        <div class="yt-shot-labeler-section-title">Labeled Shots</div>
+        <div id="label-list" style="max-height:120px;overflow:auto;font-size:13px;margin-bottom:10px;"></div>
+      </div>
+      <hr>
+      <div class="yt-shot-labeler-section">
+        <div class="yt-shot-labeler-section-title">Export Labels</div>
+        <button id="save-labels" style="margin-bottom:2px;">Download CSV</button>
+      </div>
     </div>
-    <button id="load-csv" style="margin-bottom:10px;">Load existing CSV</button>
-    <input type="file" id="csv-file-input" accept=".csv" style="display:none;">
-    <div style="margin:8px 0;">
-      <button id="mark-start">Mark Start</button>
-      <span id="shot-status" style="margin-left:10px;"></span>
-    </div>
-    <div id="label-buttons" style="margin-bottom:10px;"></div>
-    <button id="mark-end" style="margin-bottom:10px;">Mark End</button>
-    <div id="label-list" style="max-height:120px;overflow:auto;font-size:13px;margin-bottom:10px;"></div>
-    <button id="save-labels" style="margin-bottom:2px;">Download CSV</button>
   `;
 
   // Styling
@@ -86,23 +108,40 @@ function createLabelerPanel() {
   panel.style.zIndex = 99999;
   panel.style.background = "#fff";
   panel.style.border = "1px solid #222";
-  panel.style.padding = "10px 16px 10px 10px";
+  panel.style.padding = "0";
   panel.style.borderRadius = "8px";
   panel.style.boxShadow = "0 4px 16px #0002";
-  panel.style.width = "340px";
+  panel.style.width = "360px";
   panel.style.fontSize = "14px";
   panel.style.fontFamily = "Arial, sans-serif";
   panel.style.lineHeight = "1.5";
-  panel.style.minHeight = "140px";
   panel.style.userSelect = "none";
   panel.style.transition = "box-shadow 0.2s";
+  panel.style.overflow = "hidden";
+  panel.style.backgroundClip = "padding-box";
+  panel.style.display = "flex";
+  panel.style.flexDirection = "column";
+  panel.style.maxHeight = "90vh";
+  panel.style.minWidth = "320px";
+
+  // Make the scrollable content area flex-grow
+  const observer = new MutationObserver(() => {
+    const content = panel.querySelector('#yt-shot-labeler-content');
+    if (content) {
+      content.style.flex = "1 1 auto";
+      content.style.overflowY = "auto";
+      content.style.overflowX = "hidden";
+      observer.disconnect();
+    }
+  });
+  observer.observe(panel, { childList: true, subtree: true });
 
   document.body.appendChild(panel);
 
   // --- Drag & Drop Logic ---
   const header = panel.querySelector('#yt-shot-labeler-header');
   let isDragging = false, offsetX = 0, offsetY = 0;
-  header.onmousedown = function(e) {
+  header.onmousedown = function (e) {
     isDragging = true;
     offsetX = e.clientX - panel.getBoundingClientRect().left;
     offsetY = e.clientY - panel.getBoundingClientRect().top;
@@ -139,7 +178,7 @@ function createLabelerPanel() {
 
   function updateStatus() {
     const status = panel.querySelector('#shot-status');
-    status.textContent = `Start: ${currentShot.start !== null ? currentShot.start.toFixed(2)+'s' : "-"} | End: ${currentShot.end !== null ? currentShot.end.toFixed(2)+'s' : "-"} | Label: ${currentShot.label ?? "-"}`;
+    status.textContent = `Start: ${currentShot.start !== null ? currentShot.start.toFixed(2) + 's' : "-"} | End: ${currentShot.end !== null ? currentShot.end.toFixed(2) + 's' : "-"} | Label: ${currentShot.label ?? "-"}`;
   }
 
   // Get YouTube video element
@@ -172,23 +211,25 @@ function createLabelerPanel() {
       alert("End time must be after start time!");
       return;
     }
-    shots.push({...currentShot});
+    shots.push({ ...currentShot });
     updateShotList();
-    currentShot = {start: null, end: null, label: null};
+    currentShot = { start: null, end: null, label: null };
     [...labelDiv.children].forEach(b => b.classList.remove("selected"));
     updateStatus();
   };
 
   function updateShotList() {
     const listDiv = panel.querySelector('#label-list');
-    listDiv.innerHTML = shots.map((shot, i) =>
-      `<div style="display:flex;align-items:center;gap:6px;">
-        <div style="flex:1;">#${i+1}: <b>${shot.label}</b> [${shot.start.toFixed(2)}s - ${shot.end.toFixed(2)}s]</div>
-        <button title="Delete" class="yt-shot-labeler-delete" data-index="${i}" style="background:transparent;border:none;cursor:pointer;font-size:15px;">🗑️</button>
-      </div>`
-    ).join("");
+    listDiv.innerHTML = shots.length === 0
+      ? `<div style="color:#999;">No shots labeled yet.</div>`
+      : shots.map((shot, i) =>
+        `<div style="display:flex;align-items:center;gap:6px;">
+          <div style="flex:1;">#${i + 1}: <b>${shot.label}</b> [${shot.start.toFixed(2)}s - ${shot.end.toFixed(2)}s]</div>
+          <button title="Delete" class="yt-shot-labeler-delete" data-index="${i}" style="background:transparent;border:none;cursor:pointer;font-size:15px;">🗑️</button>
+        </div>`
+      ).join("");
     listDiv.querySelectorAll('.yt-shot-labeler-delete').forEach(btn => {
-      btn.onclick = function() {
+      btn.onclick = function () {
         const idx = parseInt(btn.getAttribute('data-index'));
         shots.splice(idx, 1);
         updateShotList();
@@ -225,7 +266,6 @@ function createLabelerPanel() {
           else part += c;
         }
         parts.push(part);
-
         return {
           start: parseFloat(parts[idxStart]),
           end: parseFloat(parts[idxEnd]),
@@ -248,9 +288,9 @@ function createLabelerPanel() {
       // Escape label for CSV (quotes)
       const safeLabel = `"${(shot.label ?? '').replace(/"/g, '""')}"`;
       const safeUrl = `"${videoUrl.replace(/"/g, '""')}"`;
-      csv += `${safeUrl},${idx+1},${shot.start},${shot.end},${safeLabel}\n`;
+      csv += `${safeUrl},${idx + 1},${shot.start},${shot.end},${safeLabel}\n`;
     });
-    const blob = new Blob([csv], {type: 'text/csv'});
+    const blob = new Blob([csv], { type: 'text/csv' });
     const reader = new FileReader();
     reader.onload = () => {
       chrome.runtime.sendMessage({
