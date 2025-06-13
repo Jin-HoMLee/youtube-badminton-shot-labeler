@@ -18,6 +18,40 @@
   background-clip: padding-box;
   position: fixed;
   z-index: 99999;
+  resize: none !important;
+  min-height: 200px;
+}
+
+.yt-shot-labeler-resize-handle {
+  position: absolute;
+  z-index: 100000;
+  width: 14px;
+  height: 14px;
+  background: transparent;
+  opacity: 0.6;
+  pointer-events: auto;
+}
+
+.yt-shot-labeler-resize-handle.n { left: 50%; top: -7px; margin-left: -7px; cursor: ns-resize; }
+.yt-shot-labeler-resize-handle.s { left: 50%; bottom: -7px; margin-left: -7px; cursor: ns-resize; }
+.yt-shot-labeler-resize-handle.e { right: -7px; top: 50%; margin-top: -7px; cursor: ew-resize; }
+.yt-shot-labeler-resize-handle.w { left: -7px; top: 50%; margin-top: -7px; cursor: ew-resize; }
+
+.yt-shot-labeler-resize-handle.nw { left: -7px; top: -7px; cursor: nwse-resize; }
+.yt-shot-labeler-resize-handle.ne { right: -7px; top: -7px; cursor: nesw-resize; }
+.yt-shot-labeler-resize-handle.sw { left: -7px; bottom: -7px; cursor: nesw-resize; }
+.yt-shot-labeler-resize-handle.se { right: -7px; bottom: -7px; cursor: nwse-resize; }
+
+.yt-shot-labeler-resize-handle.nw,
+.yt-shot-labeler-resize-handle.ne,
+.yt-shot-labeler-resize-handle.sw,
+.yt-shot-labeler-resize-handle.se {
+  width: 16px; height: 16px;
+}
+.yt-shot-labeler-resize-handle:hover {
+  background: #b2d7ff80;
+  opacity: 1;
+  border-radius: 4px;
 }
 
 #yt-shot-labeler-header {

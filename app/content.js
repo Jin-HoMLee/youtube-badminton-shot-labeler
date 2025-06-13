@@ -1,4 +1,4 @@
-// YouTube Shot Labeler: content script with scrollable panel and fixed header
+// YouTube Shot Labeler: content script with scrollable, fully resizable panel (all sides/corners)
 const PANEL_ID = 'yt-shot-labeler-panel';
 
 // Utility to format date/time as YYYY-MM-DD HH:MM:SS
@@ -101,7 +101,7 @@ function createLabelerPanel() {
     </div>
   `;
 
-  // Styling
+  // Styling/behavior for the panel itself
   panel.style.position = "fixed";
   panel.style.top = "80px";
   panel.style.right = "40px";
@@ -123,6 +123,29 @@ function createLabelerPanel() {
   panel.style.flexDirection = "column";
   panel.style.maxHeight = "90vh";
   panel.style.minWidth = "320px";
+  panel.style.minHeight = "200px";
+  panel.style.resize = "none"; // We use custom
+
+  // --- Add 8 resize handles (corners + sides) ---
+  const handles = [
+    { cls: 'n', cursor: 'ns-resize' },
+    { cls: 's', cursor: 'ns-resize' },
+    { cls: 'e', cursor: 'ew-resize' },
+    { cls: 'w', cursor: 'ew-resize' },
+    { cls: 'ne', cursor: 'nesw-resize' },
+    { cls: 'nw', cursor: 'nwse-resize' },
+    { cls: 'se', cursor: 'nwse-resize' },
+    { cls: 'sw', cursor: 'nesw-resize' }
+  ];
+  handles.forEach(({ cls, cursor }) => {
+    const h = document.createElement('div');
+    h.className = `yt-shot-labeler-resize-handle ${cls}`;
+    h.style.cursor = cursor;
+    panel.appendChild(h);
+  });
+
+  // Append panel to DOM before getting content
+  document.body.appendChild(panel);
 
   // Make the scrollable content area flex-grow
   const observer = new MutationObserver(() => {
@@ -136,12 +159,60 @@ function createLabelerPanel() {
   });
   observer.observe(panel, { childList: true, subtree: true });
 
-  document.body.appendChild(panel);
+  // --- Resize Logic for all handles ---
+  let resizing = false, resizeDir = '', startX, startY, startW, startH, startL, startT;
+  panel.querySelectorAll('.yt-shot-labeler-resize-handle').forEach(handle => {
+    handle.addEventListener("mousedown", function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      resizing = true;
+      resizeDir = Array.from(handle.classList).find(c => c.length <= 2 && c !== "yt-shot-labeler-resize-handle");
+      startX = e.clientX;
+      startY = e.clientY;
+      const rect = panel.getBoundingClientRect();
+      startW = rect.width;
+      startH = rect.height;
+      startL = rect.left;
+      startT = rect.top;
+      document.body.style.userSelect = "none";
+    });
+  });
+  document.addEventListener("mousemove", function(e) {
+    if (!resizing) return;
+    let dx = e.clientX - startX;
+    let dy = e.clientY - startY;
+    let minW = 280, minH = 200, maxW = window.innerWidth * 0.98, maxH = window.innerHeight * 0.98;
+    let newW = startW, newH = startH, newL = startL, newT = startT;
+    // Corners and sides
+    if (resizeDir.includes('e')) newW = Math.min(maxW, Math.max(minW, startW + dx));
+    if (resizeDir.includes('s')) newH = Math.min(maxH, Math.max(minH, startH + dy));
+    if (resizeDir.includes('w')) {
+      newW = Math.min(maxW, Math.max(minW, startW - dx));
+      newL = startL + dx;
+    }
+    if (resizeDir.includes('n')) {
+      newH = Math.min(maxH, Math.max(minH, startH - dy));
+      newT = startT + dy;
+    }
+    // If resizing from left or top, move the panel
+    if (resizeDir.includes('w')) panel.style.left = newL + "px";
+    if (resizeDir.includes('n')) panel.style.top = newT + "px";
+    panel.style.width = newW + "px";
+    panel.style.height = newH + "px";
+  });
+  document.addEventListener("mouseup", function() {
+    if (resizing) {
+      resizing = false;
+      document.body.style.userSelect = "";
+    }
+  });
 
   // --- Drag & Drop Logic ---
   const header = panel.querySelector('#yt-shot-labeler-header');
   let isDragging = false, offsetX = 0, offsetY = 0;
   header.onmousedown = function (e) {
+    // Prevent drag if clicking resize handle
+    if (e.target.classList.contains('yt-shot-labeler-resize-handle')) return;
     isDragging = true;
     offsetX = e.clientX - panel.getBoundingClientRect().left;
     offsetY = e.clientY - panel.getBoundingClientRect().top;
