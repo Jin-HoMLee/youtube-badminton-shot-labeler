@@ -198,16 +198,17 @@ function createLabelerPanel() {
       alert("No labels to save!");
       return;
     }
-    let csv = 'shot_id,start_sec,end_sec,label\n';
+    // Use the panel's extracted videoUrl (already defined above)
+    let csv = 'video_url,shot_id,start_sec,end_sec,label\n';
     shots.forEach((shot, idx) => {
-      csv += `${idx+1},${shot.start},${shot.end},${shot.label}\n`;
+      csv += `"${videoUrl}",${idx+1},${shot.start},${shot.end},${shot.label}\n`;
     });
     // Download
     const blob = new Blob([csv], {type: 'text/csv'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `youtube_labels_${Date.now()}.csv`;
+    a.download = `labeled_shots.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
