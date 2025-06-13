@@ -7,7 +7,12 @@ function formatDateTime(dt) {
   return `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())} ${pad(dt.getHours())}:${pad(dt.getMinutes())}:${pad(dt.getSeconds())}`;
 }
 
-// Get Youtube video title
+// Utility to sanitize folder/file names
+function sanitize(str) {
+  return str.replace(/[<>:"/\\|?*]+/g, '').trim();
+}
+
+// Get Youtube video title, robustly
 function getVideoTitle() {
   let title =
     document.querySelector('h1.title')?.innerText ||
@@ -28,7 +33,6 @@ function getVideoTitle() {
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.action === "toggle-panel") {
     if (document.getElementById(PANEL_ID)) {
-      // If open, close it
       document.getElementById(PANEL_ID).remove();
     } else {
       createLabelerPanel();
@@ -47,6 +51,7 @@ function createLabelerPanel() {
   const now = new Date();
   const dateTimeStr = formatDateTime(now);
   const videoTitle = getVideoTitle();
+  const sanitizedTitle = sanitize(videoTitle) || "video";
   const videoUrl = window.location.href;
 
   // Panel container
@@ -62,6 +67,8 @@ function createLabelerPanel() {
       <div><b>Video Title:</b> <span id="yt-shot-labeler-videotitle">${videoTitle}</span></div>
       <div style="max-width:310px;word-break:break-all;"><b>URL:</b> <span id="yt-shot-labeler-url">${videoUrl}</span></div>
     </div>
+    <button id="load-csv" style="margin-bottom:10px;">Load existing CSV</button>
+    <input type="file" id="csv-file-input" accept=".csv" style="display:none;">
     <div style="margin:8px 0;">
       <button id="mark-start">Mark Start</button>
       <span id="shot-status" style="margin-left:10px;"></span>
@@ -123,7 +130,6 @@ function createLabelerPanel() {
     btn.className = "yt-shot-labeler-label-btn";
     btn.onclick = () => {
       currentShot.label = label;
-      // Mark selected visually
       [...labelDiv.children].forEach(b => b.classList.remove("selected"));
       btn.classList.add("selected");
       updateStatus();
@@ -168,7 +174,6 @@ function createLabelerPanel() {
     }
     shots.push({...currentShot});
     updateShotList();
-    // Reset
     currentShot = {start: null, end: null, label: null};
     [...labelDiv.children].forEach(b => b.classList.remove("selected"));
     updateStatus();
@@ -182,7 +187,6 @@ function createLabelerPanel() {
         <button title="Delete" class="yt-shot-labeler-delete" data-index="${i}" style="background:transparent;border:none;cursor:pointer;font-size:15px;">🗑️</button>
       </div>`
     ).join("");
-    // Add delete handlers
     listDiv.querySelectorAll('.yt-shot-labeler-delete').forEach(btn => {
       btn.onclick = function() {
         const idx = parseInt(btn.getAttribute('data-index'));
@@ -192,25 +196,70 @@ function createLabelerPanel() {
     });
   }
 
-  // Export labels as CSV
+  // Load CSV logic
+  const loadBtn = panel.querySelector('#load-csv');
+  const fileInput = panel.querySelector('#csv-file-input');
+  loadBtn.onclick = () => fileInput.click();
+  fileInput.onchange = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target.result;
+      // Parse CSV (skip header, robust to quoted values)
+      const lines = text.trim().split('\n');
+      if (lines.length < 2) return;
+      const header = lines[0].split(',').map(s => s.trim());
+      // Find column indexes
+      const idxStart = header.indexOf('start_sec');
+      const idxEnd = header.indexOf('end_sec');
+      const idxLabel = header.indexOf('label');
+      // Ignore all video_url/shot_id columns for loading shots
+      shots = lines.slice(1).map(line => {
+        // Handle quoted CSVs with commas in label, url, etc.
+        const parts = [];
+        let part = '', inQuotes = false;
+        for (let c of line) {
+          if (c === '"') inQuotes = !inQuotes;
+          else if (c === ',' && !inQuotes) { parts.push(part); part = ''; }
+          else part += c;
+        }
+        parts.push(part);
+
+        return {
+          start: parseFloat(parts[idxStart]),
+          end: parseFloat(parts[idxEnd]),
+          label: parts[idxLabel]?.replace(/^"|"$/g, '') ?? ''
+        };
+      }).filter(s => !isNaN(s.start) && !isNaN(s.end) && s.label);
+      updateShotList();
+    };
+    reader.readAsText(file);
+  };
+
+  // Export labels as CSV via background.js and chrome.downloads API
   panel.querySelector('#save-labels').onclick = () => {
     if (!shots.length) {
       alert("No labels to save!");
       return;
     }
-    // Use the panel's extracted videoUrl (already defined above)
     let csv = 'video_url,shot_id,start_sec,end_sec,label\n';
     shots.forEach((shot, idx) => {
-      csv += `"${videoUrl}",${idx+1},${shot.start},${shot.end},${shot.label}\n`;
+      // Escape label for CSV (quotes)
+      const safeLabel = `"${(shot.label ?? '').replace(/"/g, '""')}"`;
+      const safeUrl = `"${videoUrl.replace(/"/g, '""')}"`;
+      csv += `${safeUrl},${idx+1},${shot.start},${shot.end},${safeLabel}\n`;
     });
-    // Download
     const blob = new Blob([csv], {type: 'text/csv'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `labeled_shots.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const reader = new FileReader();
+    reader.onload = () => {
+      chrome.runtime.sendMessage({
+        action: "download-csv",
+        filename: `YouTube Shot Labeler/${sanitizedTitle}/labeled_shots.csv`,
+        dataUrl: reader.result
+      });
+    };
+    reader.readAsDataURL(blob);
   };
 
   // Close panel
