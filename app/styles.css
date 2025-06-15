@@ -1,152 +1,106 @@
 #yt-shot-labeler-panel {
+  box-sizing: border-box;
+}
+
+.yt-shot-labeler-section {
+  margin: 0 12px 10px 12px;
+}
+.yt-shot-labeler-section-title {
+  font-size: 15px;
+  font-weight: bold;
+  color: #183e67;
+  margin: 10px 0 4px 0;
+  letter-spacing: 0.5px;
+}
+
+.yt-shot-labeler-info {
+  font-size: 13px;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+#label-buttons {
   display: flex;
   flex-direction: column;
-  max-height: 90vh;
-  min-width: 320px;
-  width: 360px;
-  overflow: hidden;
-  transition: box-shadow 0.2s;
-  cursor: default;
-  background: #f6f8fa;
-  box-shadow: 0 8px 32px #0005;
-  border-radius: 8px;
-  border: 1px solid #222;
-  padding: 0;
-  font-size: 14px;
-  font-family: Arial, sans-serif;
-  line-height: 1.5;
-  background-clip: padding-box;
-  position: fixed;
-  z-index: 99999;
-  resize: none !important;
-  min-height: 200px;
+  gap: 10px;
 }
 
+/* Category sub-section for label buttons */
+.yt-shot-labeler-category-section {
+  margin-bottom: 8px;
+  padding: 8px 6px 6px 8px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background: #fafdff;
+  box-sizing: border-box;
+}
+
+.yt-shot-labeler-category-title {
+  font-weight: bold;
+  color: #1761a0;
+  margin-bottom: 5px;
+  font-size: 13.5px;
+}
+
+.yt-shot-labeler-label-btn {
+  background: #e6eefc;
+  border: 1px solid #b6c7e7;
+  border-radius: 4px;
+  margin: 2px 4px 2px 0;
+  padding: 2px 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.14s, border 0.14s;
+  color: #173a6a;
+  outline: none;
+  display: inline-block;
+}
+.yt-shot-labeler-label-btn.selected,
+.yt-shot-labeler-label-btn:active {
+  background: #1761a0;
+  color: #fff;
+  border: 1.5px solid #183e67;
+}
+
+.yt-shot-labeler-label-btn:hover {
+  background: #b2d2fa;
+  color: #183e67;
+}
+
+/* Resize handles */
 .yt-shot-labeler-resize-handle {
   position: absolute;
-  z-index: 100000;
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
+  z-index: 10;
   background: transparent;
-  opacity: 0.6;
-  pointer-events: auto;
+}
+.yt-shot-labeler-resize-handle.n { top: -6px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+.yt-shot-labeler-resize-handle.s { bottom: -6px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+.yt-shot-labeler-resize-handle.e { right: -6px; top: 50%; transform: translateY(-50%); cursor: ew-resize; }
+.yt-shot-labeler-resize-handle.w { left: -6px; top: 50%; transform: translateY(-50%); cursor: ew-resize; }
+.yt-shot-labeler-resize-handle.ne { top: -6px; right: -6px; cursor: nesw-resize; }
+.yt-shot-labeler-resize-handle.nw { top: -6px; left: -6px; cursor: nwse-resize; }
+.yt-shot-labeler-resize-handle.se { bottom: -6px; right: -6px; cursor: nwse-resize; }
+.yt-shot-labeler-resize-handle.sw { bottom: -6px; left: -6px; cursor: nesw-resize; }
+
+/* List of labeled shots */
+#label-list > div {
+  margin-bottom: 4px;
+  border-bottom: 1px dashed #e0e0e0;
+  padding-bottom: 2px;
 }
 
-.yt-shot-labeler-resize-handle.n { left: 50%; top: -7px; margin-left: -7px; cursor: ns-resize; }
-.yt-shot-labeler-resize-handle.s { left: 50%; bottom: -7px; margin-left: -7px; cursor: ns-resize; }
-.yt-shot-labeler-resize-handle.e { right: -7px; top: 50%; margin-top: -7px; cursor: ew-resize; }
-.yt-shot-labeler-resize-handle.w { left: -7px; top: 50%; margin-top: -7px; cursor: ew-resize; }
-
-.yt-shot-labeler-resize-handle.nw { left: -7px; top: -7px; cursor: nwse-resize; }
-.yt-shot-labeler-resize-handle.ne { right: -7px; top: -7px; cursor: nesw-resize; }
-.yt-shot-labeler-resize-handle.sw { left: -7px; bottom: -7px; cursor: nesw-resize; }
-.yt-shot-labeler-resize-handle.se { right: -7px; bottom: -7px; cursor: nwse-resize; }
-
-.yt-shot-labeler-resize-handle.nw,
-.yt-shot-labeler-resize-handle.ne,
-.yt-shot-labeler-resize-handle.sw,
-.yt-shot-labeler-resize-handle.se {
-  width: 16px; height: 16px;
-}
-.yt-shot-labeler-resize-handle:hover {
-  background: #b2d7ff80;
-  opacity: 1;
-  border-radius: 4px;
-}
-
-#yt-shot-labeler-header {
-  flex: 0 0 auto;
-  background: #e3f0fb;
-  border-radius: 7px 7px 0 0;
-  padding: 10px 10px 8px 14px;
+.yt-shot-labeler-delete {
+  color: #e14;
+  background: transparent;
+  border: none;
   font-size: 15px;
-  color: #0c236e;
-  border-bottom: 1px solid #d0e4f6;
-  user-select: none;
-  cursor: move;
-}
-
-#yt-shot-labeler-content {
-  flex: 1 1 auto;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-bottom: 8px;
-}
-
-#yt-shot-labeler-panel hr {
-  border: none;
-  border-top: 1px solid #d4dbe6;
-  margin: 0;
-}
-
-#yt-shot-labeler-panel .yt-shot-labeler-section {
-  margin: 0 0 0 0;
-  padding: 10px 14px 9px 14px;
-  background: #f8fafc;
-  border-radius: 0;
-  border: none;
-  box-shadow: none;
-}
-
-#yt-shot-labeler-panel .yt-shot-labeler-section + .yt-shot-labeler-section {
-  margin-top: 0;
-}
-#yt-shot-labeler-panel .yt-shot-labeler-section-title {
-  font-weight: bold;
-  font-size: 14px;
-  margin: 0 0 7px 0;
-  color: #1761a0;
-  letter-spacing: 0.5px;
-  padding-top: 2px;
-}
-#yt-shot-labeler-panel .yt-shot-labeler-info {
-  font-size: 12px;
-  line-height: 1.4;
-  margin-bottom: 5px;
-}
-
-#yt-shot-labeler-panel button {
-  background: #eee;
-  border: 1px solid #888;
-  border-radius: 4px;
   cursor: pointer;
-  padding: 4px 12px;
-  margin-right: 4px;
-  margin-bottom: 3px;
-  font-size: 13px;
-  outline: none;
-  transition: background 0.15s, border 0.15s;
+  margin-left: 2px;
 }
-#yt-shot-labeler-panel button:active,
-#yt-shot-labeler-panel .yt-shot-labeler-label-btn:active {
-  background: #b2d7ff;
-}
-#yt-shot-labeler-panel .yt-shot-labeler-label-btn {
-  background: #f4f7fa;
-  border: 1px solid #a7bedc;
-  color: #23395d;
-  margin-bottom: 5px;
-  margin-right: 6px;
-}
-#yt-shot-labeler-panel .yt-shot-labeler-label-btn.selected {
-  background: #b2d7ff;
-  border-color: #1761a0;
-  color: #1761a0;
-}
-#yt-shot-labeler-panel #yt-shot-labeler-close {
-  color: #888;
-  font-weight: bold;
-  margin: 0;
-  padding: 0 6px;
-}
-#yt-shot-labeler-panel #yt-shot-labeler-close:hover {
-  color: #c00;
-  background: #eee;
-}
-#yt-shot-labeler-panel .yt-shot-labeler-delete {
-  color: #a00;
-  padding: 0 8px;
-}
-#yt-shot-labeler-panel .yt-shot-labeler-delete:hover {
-  background: #ffeaea;
+.yt-shot-labeler-delete:hover {
+  color: #fff;
+  background: #e14;
+  border-radius: 3px;
 }

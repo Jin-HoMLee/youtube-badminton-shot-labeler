@@ -1,4 +1,6 @@
 // YouTube Shot Labeler: content script with scrollable, fully resizable panel (all sides/corners)
+// Dynamically loads label buttons from badminton_shots_glossary.json, groups by category as sub-sections
+
 const PANEL_ID = 'yt-shot-labeler-panel';
 
 // Utility to format date/time as YYYY-MM-DD HH:MM:SS
@@ -43,7 +45,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 function createLabelerPanel() {
   if (document.getElementById(PANEL_ID)) return; // Don't double-create
 
-  const SHOT_LABELS = ["net shot", "lift", "clear", "smash", "drop", "drive", "block"];
   let shots = [];
   let currentShot = { start: null, end: null, label: null };
 
@@ -232,20 +233,41 @@ function createLabelerPanel() {
     document.body.style.userSelect = "";
   });
 
-  // Label buttons
+  // --- DYNAMIC LABEL BUTTONS FROM GLOSSARY, group by category as sub-sections ---
   const labelDiv = panel.querySelector('#label-buttons');
-  SHOT_LABELS.forEach(label => {
-    const btn = document.createElement('button');
-    btn.textContent = label;
-    btn.className = "yt-shot-labeler-label-btn";
-    btn.onclick = () => {
-      currentShot.label = label;
-      [...labelDiv.children].forEach(b => b.classList.remove("selected"));
-      btn.classList.add("selected");
-      updateStatus();
-    };
-    labelDiv.appendChild(btn);
-  });
+  fetch(chrome.runtime.getURL('badminton_shots_glossary.json'))
+    .then(r => r.json())
+    .then(glossaryData => {
+      glossaryData.categories.forEach(category => {
+        // Create a sub-section div for the category
+        const catSection = document.createElement('div');
+        catSection.className = "yt-shot-labeler-category-section";
+
+        // Category header
+        const categoryHeader = document.createElement('div');
+        categoryHeader.textContent = category.category;
+        categoryHeader.className = "yt-shot-labeler-category-title";
+        catSection.appendChild(categoryHeader);
+
+        // Label buttons for this category
+        category.shots.forEach(shot => {
+          const btn = document.createElement('button');
+          btn.textContent = shot.term;
+          btn.className = "yt-shot-labeler-label-btn";
+          btn.title = shot.definition; // Tooltip
+          btn.onclick = () => {
+            currentShot.label = shot.term;
+            // Deselect all buttons in all categories
+            labelDiv.querySelectorAll('button').forEach(b => b.classList.remove("selected"));
+            btn.classList.add("selected");
+            updateStatus();
+          };
+          catSection.appendChild(btn);
+        });
+
+        labelDiv.appendChild(catSection);
+      });
+    });
 
   function updateStatus() {
     const status = panel.querySelector('#shot-status');
@@ -285,7 +307,7 @@ function createLabelerPanel() {
     shots.push({ ...currentShot });
     updateShotList();
     currentShot = { start: null, end: null, label: null };
-    [...labelDiv.children].forEach(b => b.classList.remove("selected"));
+    labelDiv.querySelectorAll('button').forEach(b => b.classList.remove("selected"));
     updateStatus();
   };
 
