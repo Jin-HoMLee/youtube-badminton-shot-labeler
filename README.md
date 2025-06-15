@@ -48,3 +48,7 @@ This browser extension lets you label shots/events in any YouTube video and expo
 ---
 
 **Enjoy!**
+
+## Credits
+
+The badminton shots glossary [badminton_shots_glossary.json](app/badminton_shots_glossary.json) in this repository is adapted and modified from [WorldBadminton.com Glossary](https://www.worldbadminton.com/glossary.htm).
