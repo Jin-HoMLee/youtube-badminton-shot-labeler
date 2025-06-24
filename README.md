@@ -1,11 +1,11 @@
-# YouTube Shot Labeler Extension
+# YouTube Badminton Shot Labeler Extension
 
 This browser extension lets you label shots/events in any YouTube video and export the results as a CSV file.
 
 ## How to Use
 
-1. **Download and Place Files:**
-   - Place `manifest.json`, `background.js`, `content.js`, `styles.css`, and `README.md` into a folder.
+1. **Download Extensions Folder:**
+   - Download `chrome-extension` folder.
 
 2. **Load as Unpacked Extension:**
    - Open `chrome://extensions` in Chrome (or your browser's extensions page).
@@ -43,7 +43,7 @@ This browser extension lets you label shots/events in any YouTube video and expo
 
 ## Customization
 
-- To add new labels, edit the `SHOT_LABELS` array in `content.js`.
+- To add new labels, edit the `badminton_shots_glossary.json`.
 
 ---
 
@@ -51,4 +51,8 @@ This browser extension lets you label shots/events in any YouTube video and expo
 
 ## Credits
 
-The badminton shots glossary [badminton_shots_glossary.json](app/badminton_shots_glossary.json) in this repository is adapted and modified from [WorldBadminton.com Glossary](https://www.worldbadminton.com/glossary.htm).
+The badminton shots glossary [badminton_shots_glossary.json](app/badminton_shots_glossary.json) in this repository is adapted and modified from [WorldBadminton.com Glossary](https://www.worldbadminton.com/glossary.htm). 
+
+Special thanks to GitHub Copilot Chat Assistant for guidance and coding help during development.
+
+Developed by Jin-HoMLee. 
