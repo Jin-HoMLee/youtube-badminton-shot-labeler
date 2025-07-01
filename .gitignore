@@ -1,3 +1,6 @@
 # Ignore node_modules directory and source maps in dist directories
 node_modules/
 **/dist/*.map
+
+# Ignore zip files
+*.zip
