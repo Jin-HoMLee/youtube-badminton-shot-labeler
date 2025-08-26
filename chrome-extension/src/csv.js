@@ -1,5 +1,13 @@
 // CSV import/export logic
 
+/**
+ * Sets up CSV import and export functionality for the labeler panel
+ * @param {HTMLElement} panel - The panel element containing CSV controls
+ * @param {Array} shots - Array of shot objects to import/export
+ * @param {Function} updateShotList - Function to update the shot list display
+ * @param {string} videoUrl - The current video URL
+ * @param {string} sanitizedTitle - The sanitized video title for filename
+ */
 export function setupCSV(panel, shots, updateShotList, videoUrl, sanitizedTitle) {
   // Import
   const loadBtn = panel.querySelector('#load-csv');

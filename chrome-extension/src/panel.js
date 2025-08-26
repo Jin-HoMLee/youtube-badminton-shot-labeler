@@ -4,6 +4,10 @@ import { addDragBehavior } from './drag.js';
 import { setupCSV } from './csv.js';
 import { setupGlossaryButtons } from './glossary.js';
 
+/**
+ * Creates and displays the main labeler panel for YouTube shot labeling
+ * @returns {void}
+ */
 export function createLabelerPanel() {
   const PANEL_ID = 'yt-shot-labeler-panel';
   if (document.getElementById(PANEL_ID)) return;
@@ -91,11 +95,17 @@ export function createLabelerPanel() {
 
   addDragBehavior(panel);
 
+  /**
+   * Updates the shot status display with current shot information
+   */
   function updateStatus() {
     const status = panel.querySelector('#shot-status');
     status.textContent = `Start: ${currentShot.start !== null ? currentShot.start.toFixed(2) + 's' : "-"} | End: ${currentShot.end !== null ? currentShot.end.toFixed(2) + 's' : "-"} | Label: ${currentShot.label ?? '-'}`;
   }
 
+  /**
+   * Updates the labeled shots list display
+   */
   function updateShotList() {
     const listDiv = panel.querySelector('#label-list');
     listDiv.innerHTML = shots.length === 0
@@ -149,6 +159,10 @@ export function createLabelerPanel() {
   setupCSV(panel, shots, updateShotList, videoUrl, sanitizedTitle);
 
   panel.querySelector('#yt-shot-labeler-close').onclick = () => {
+    // Ensure observer is disconnected before removing panel
+    if (observer && !observer.disconnected) {
+      observer.disconnect();
+    }
     panel.remove();
   };
 

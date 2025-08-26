@@ -1,4 +1,11 @@
-// glossary.js
+// Glossary button setup logic
+
+/**
+ * Sets up glossary buttons based on the badminton shots glossary data
+ * @param {HTMLElement} panel - The panel element containing the label buttons container
+ * @param {Function} getCurrentShot - Function that returns the current shot object
+ * @param {Function} updateStatus - Function to update the status display
+ */
 export function setupGlossaryButtons(panel, getCurrentShot, updateStatus) {
   const labelDiv = panel.querySelector('#label-buttons');
   labelDiv.innerHTML = "";  // Clear old buttons

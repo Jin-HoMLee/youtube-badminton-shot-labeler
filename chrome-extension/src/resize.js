@@ -1,5 +1,9 @@
 // Panel resizing logic
 
+/**
+ * Adds resize handles to a panel element to enable user resizing
+ * @param {HTMLElement} panel - The panel element to add resize handles to
+ */
 export function addResizeHandles(panel) {
   const handles = [
     { cls: 'n', cursor: 'ns-resize' },

@@ -1,5 +1,9 @@
 // Panel drag logic
 
+/**
+ * Adds drag behavior to a panel element to enable user repositioning
+ * @param {HTMLElement} panel - The panel element to make draggable
+ */
 export function addDragBehavior(panel) {
   const header = panel.querySelector('#yt-shot-labeler-header');
   let isDragging = false, offsetX = 0, offsetY = 0;

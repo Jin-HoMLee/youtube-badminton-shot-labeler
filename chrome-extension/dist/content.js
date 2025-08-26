@@ -350,6 +350,9 @@
     };
     setupCSV(panel, shots, updateShotList, videoUrl, sanitizedTitle);
     panel.querySelector("#yt-shot-labeler-close").onclick = () => {
+      if (observer && !observer.disconnected) {
+        observer.disconnect();
+      }
       panel.remove();
     };
     updateStatus();

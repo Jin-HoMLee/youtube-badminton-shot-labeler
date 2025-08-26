@@ -45,13 +45,41 @@ This browser extension lets you label shots/events in any YouTube video and expo
 
 - To add new labels, edit the `badminton_shots_glossary.json`.
 
+## Code Architecture
+
+The extension follows a modular architecture with clear separation of concerns:
+
+### Core Modules
+
+- **`src/content.js`** - Main entry point that handles browser extension messaging and panel toggling
+- **`src/panel.js`** - Creates and manages the main labeler panel UI and coordinates all functionality
+- **`src/utils.js`** - Utility functions for date formatting, string sanitization, and DOM queries
+- **`src/resize.js`** - Panel resizing functionality with drag handles
+- **`src/drag.js`** - Panel dragging/repositioning functionality
+- **`src/csv.js`** - CSV import and export logic for shot data
+- **`src/glossary.js`** - Dynamic glossary button creation from JSON data
+
+### Build System
+
+The extension uses esbuild to bundle the modular source code:
+- Run `npm install` to install dependencies
+- Run `npm run build` from the project root to build the extension
+- Built files are output to `chrome-extension/dist/`
+
+### Development
+
+All exported functions include JSDoc documentation for better maintainability. The modular structure makes it easy to:
+- Add new features without affecting existing code
+- Test individual components
+- Maintain and debug specific functionality
+
 ---
 
 **Enjoy!**
 
 ## Credits
 
-The badminton shots glossary [badminton_shots_glossary.json](app/badminton_shots_glossary.json) in this repository is adapted and modified from [WorldBadminton.com Glossary](https://www.worldbadminton.com/glossary.htm). 
+The badminton shots glossary [badminton_shots_glossary.json](chrome-extension/badminton_shots_glossary.json) in this repository is adapted and modified from [WorldBadminton.com Glossary](https://www.worldbadminton.com/glossary.htm). 
 
 Special thanks to GitHub Copilot Chat Assistant for guidance and coding help during development.
 
