@@ -1,5 +1,5 @@
 (() => {
-  // src/utils.js
+  // chrome-extension/src/utils.js
   function formatDateTime(dt) {
     const pad = (n) => n.toString().padStart(2, "0");
     return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())} ${pad(dt.getHours())}:${pad(dt.getMinutes())}:${pad(dt.getSeconds())}`;
@@ -18,7 +18,7 @@
     return document.querySelector("video");
   }
 
-  // src/resize.js
+  // chrome-extension/src/resize.js
   function addResizeHandles(panel) {
     const handles = [
       { cls: "n", cursor: "ns-resize" },
@@ -82,7 +82,7 @@
     });
   }
 
-  // src/drag.js
+  // chrome-extension/src/drag.js
   function addDragBehavior(panel) {
     const header = panel.querySelector("#yt-shot-labeler-header");
     let isDragging = false, offsetX = 0, offsetY = 0;
@@ -108,7 +108,7 @@
     });
   }
 
-  // src/csv.js
+  // chrome-extension/src/csv.js
   function setupCSV(panel, shots, updateShotList, videoUrl, sanitizedTitle) {
     const loadBtn = panel.querySelector("#load-csv");
     const fileInput = panel.querySelector("#csv-file-input");
@@ -174,7 +174,7 @@
     };
   }
 
-  // src/glossary.js
+  // chrome-extension/src/glossary.js
   function setupGlossaryButtons(panel, getCurrentShot, updateStatus) {
     const labelDiv = panel.querySelector("#label-buttons");
     labelDiv.innerHTML = "";
@@ -205,7 +205,7 @@
     });
   }
 
-  // src/panel.js
+  // chrome-extension/src/panel.js
   function createLabelerPanel() {
     const PANEL_ID2 = "yt-shot-labeler-panel";
     if (document.getElementById(PANEL_ID2)) return;
@@ -355,7 +355,7 @@
     updateStatus();
   }
 
-  // src/content.js
+  // chrome-extension/src/content.js
   var PANEL_ID = "yt-shot-labeler-panel";
   chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.action === "toggle-panel") {
@@ -368,4 +368,3 @@
     }
   });
 })();
-//# sourceMappingURL=content.js.map
