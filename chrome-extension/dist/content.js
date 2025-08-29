@@ -125,6 +125,13 @@
         const idxStart = header.indexOf("start_sec");
         const idxEnd = header.indexOf("end_sec");
         const idxLabel = header.indexOf("label");
+        const idxLongitudinalPosition = header.indexOf("longitudinal_position");
+        const idxLateralPosition = header.indexOf("lateral_position");
+        const idxTiming = header.indexOf("timing");
+        const idxIntention = header.indexOf("intention");
+        const idxStroke = header.indexOf("stroke");
+        const idxImpact = header.indexOf("impact");
+        const idxDirection = header.indexOf("direction");
         shots.length = 0;
         lines.slice(1).forEach((line) => {
           const parts = [];
@@ -137,12 +144,23 @@
             } else part += c;
           }
           parts.push(part);
-          if (!isNaN(parts[idxStart]) && !isNaN(parts[idxEnd]) && parts[idxLabel]) {
-            shots.push({
+          if (!isNaN(parts[idxStart]) && !isNaN(parts[idxEnd])) {
+            const shot = {
               start: parseFloat(parts[idxStart]),
               end: parseFloat(parts[idxEnd]),
-              label: parts[idxLabel]?.replace(/^"|"$/g, "") ?? ""
+              label: idxLabel >= 0 ? parts[idxLabel]?.replace(/^"|"$/g, "") ?? "" : "",
+              longitudinalPosition: idxLongitudinalPosition >= 0 ? parts[idxLongitudinalPosition]?.replace(/^"|"$/g, "") ?? "" : null,
+              lateralPosition: idxLateralPosition >= 0 ? parts[idxLateralPosition]?.replace(/^"|"$/g, "") ?? "" : null,
+              timing: idxTiming >= 0 ? parts[idxTiming]?.replace(/^"|"$/g, "") ?? "" : null,
+              intention: idxIntention >= 0 ? parts[idxIntention]?.replace(/^"|"$/g, "") ?? "" : null,
+              stroke: idxStroke >= 0 ? parts[idxStroke]?.replace(/^"|"$/g, "") ?? "" : null,
+              impact: idxImpact >= 0 ? parts[idxImpact]?.replace(/^"|"$/g, "") ?? "" : null,
+              direction: idxDirection >= 0 ? parts[idxDirection]?.replace(/^"|"$/g, "") ?? "" : null
+            };
+            Object.keys(shot).forEach((key) => {
+              if (shot[key] === "") shot[key] = null;
             });
+            shots.push(shot);
           }
         });
         updateShotList();
@@ -154,11 +172,18 @@
         alert("No labels to save!");
         return;
       }
-      let csv = "video_url,shot_id,start_sec,end_sec,label\n";
+      let csv = "video_url,shot_id,start_sec,end_sec,label,longitudinal_position,lateral_position,timing,intention,stroke,impact,direction\n";
       shots.forEach((shot, idx) => {
         const safeLabel = `"${(shot.label ?? "").replace(/"/g, '""')}"`;
         const safeUrl = `"${videoUrl.replace(/"/g, '""')}"`;
-        csv += `${safeUrl},${idx + 1},${shot.start},${shot.end},${safeLabel}
+        const safeLongitudinalPosition = `"${(shot.longitudinalPosition ?? "").replace(/"/g, '""')}"`;
+        const safeLateralPosition = `"${(shot.lateralPosition ?? "").replace(/"/g, '""')}"`;
+        const safeTiming = `"${(shot.timing ?? "").replace(/"/g, '""')}"`;
+        const safeIntention = `"${(shot.intention ?? "").replace(/"/g, '""')}"`;
+        const safeStroke = `"${(shot.stroke ?? "").replace(/"/g, '""')}"`;
+        const safeImpact = `"${(shot.impact ?? "").replace(/"/g, '""')}"`;
+        const safeDirection = `"${(shot.direction ?? "").replace(/"/g, '""')}"`;
+        csv += `${safeUrl},${idx + 1},${shot.start},${shot.end},${safeLabel},${safeLongitudinalPosition},${safeLateralPosition},${safeTiming},${safeIntention},${safeStroke},${safeImpact},${safeDirection}
 `;
       });
       const blob = new Blob([csv], { type: "text/csv" });
@@ -178,6 +203,22 @@
   function setupGlossaryButtons(panel, getCurrentShot, updateStatus) {
     const labelDiv = panel.querySelector("#label-buttons");
     labelDiv.innerHTML = "";
+    const categoryFieldMap = {
+      "Serve": "label",
+      "Clear": "label",
+      "Lift": "label",
+      "Drop": "label",
+      "Net Shot": "label",
+      "Smash & Kill": "label",
+      "Drive & Block": "label",
+      "Longitudinal Position": "longitudinalPosition",
+      "Lateral Position": "lateralPosition",
+      "Timing": "timing",
+      "Intention": "intention",
+      "Stroke": "stroke",
+      "Impact": "impact",
+      "Direction": "direction"
+    };
     fetch(chrome.runtime.getURL("badminton_shots_glossary.json")).then((r) => r.json()).then((glossaryData) => {
       glossaryData.categories.forEach((category) => {
         const catSection = document.createElement("div");
@@ -186,15 +227,18 @@
         categoryHeader.textContent = category.category;
         categoryHeader.className = "yt-shot-labeler-category-title";
         catSection.appendChild(categoryHeader);
+        const fieldName = categoryFieldMap[category.category];
         category.shots.forEach((shot) => {
           const btn = document.createElement("button");
           btn.textContent = shot.term;
           btn.className = "yt-shot-labeler-label-btn";
           btn.title = shot.definition;
+          btn.dataset.field = fieldName;
+          btn.dataset.value = shot.term;
           btn.onclick = () => {
             const currentShot = getCurrentShot();
-            currentShot.label = shot.term;
-            labelDiv.querySelectorAll("button").forEach((b) => b.classList.remove("selected"));
+            currentShot[fieldName] = shot.term;
+            catSection.querySelectorAll("button").forEach((b) => b.classList.remove("selected"));
             btn.classList.add("selected");
             updateStatus();
           };
@@ -210,7 +254,18 @@
     const PANEL_ID2 = "yt-shot-labeler-panel";
     if (document.getElementById(PANEL_ID2)) return;
     let shots = [];
-    let currentShot = { start: null, end: null, label: null };
+    let currentShot = {
+      start: null,
+      end: null,
+      label: null,
+      longitudinalPosition: null,
+      lateralPosition: null,
+      timing: null,
+      intention: null,
+      stroke: null,
+      impact: null,
+      direction: null
+    };
     const now = /* @__PURE__ */ new Date();
     const dateTimeStr = formatDateTime(now);
     const videoTitle = getVideoTitle();
@@ -301,16 +356,27 @@
     addDragBehavior(panel);
     function updateStatus() {
       const status = panel.querySelector("#shot-status");
-      status.textContent = `Start: ${currentShot.start !== null ? currentShot.start.toFixed(2) + "s" : "-"} | End: ${currentShot.end !== null ? currentShot.end.toFixed(2) + "s" : "-"} | Label: ${currentShot.label ?? "-"}`;
+      const categorizations = [];
+      if (currentShot.label) categorizations.push(`Label: ${currentShot.label}`);
+      if (currentShot.stroke) categorizations.push(`Stroke: ${currentShot.stroke}`);
+      if (currentShot.intention) categorizations.push(`Intent: ${currentShot.intention}`);
+      const categorizationText = categorizations.length > 0 ? categorizations.join(" | ") : "No categorizations";
+      status.textContent = `Start: ${currentShot.start !== null ? currentShot.start.toFixed(2) + "s" : "-"} | End: ${currentShot.end !== null ? currentShot.end.toFixed(2) + "s" : "-"} | ${categorizationText}`;
     }
     function updateShotList() {
       const listDiv = panel.querySelector("#label-list");
-      listDiv.innerHTML = shots.length === 0 ? `<div style="color:#999;">No shots labeled yet.</div>` : shots.map(
-        (shot, i) => `<div style="display:flex;align-items:center;gap:6px;">
-          <div style="flex:1;">#${i + 1}: <b>${shot.label}</b> [${shot.start.toFixed(2)}s - ${shot.end.toFixed(2)}s]</div>
-          <button title="Delete" class="yt-shot-labeler-delete" data-index="${i}" style="background:transparent;border:none;cursor:pointer;font-size:15px;">\u{1F5D1}\uFE0F</button>
-        </div>`
-      ).join("");
+      listDiv.innerHTML = shots.length === 0 ? `<div style="color:#999;">No shots labeled yet.</div>` : shots.map((shot, i) => {
+        const categories = [];
+        if (shot.label) categories.push(shot.label);
+        if (shot.stroke) categories.push(shot.stroke);
+        if (shot.intention) categories.push(shot.intention);
+        if (shot.longitudinalPosition) categories.push(shot.longitudinalPosition);
+        const categoryText = categories.length > 0 ? categories.join(", ") : "Uncategorized";
+        return `<div style="display:flex;align-items:center;gap:6px;">
+            <div style="flex:1;">#${i + 1}: <b>${categoryText}</b> [${shot.start.toFixed(2)}s - ${shot.end.toFixed(2)}s]</div>
+            <button title="Delete" class="yt-shot-labeler-delete" data-index="${i}" style="background:transparent;border:none;cursor:pointer;font-size:15px;">\u{1F5D1}\uFE0F</button>
+          </div>`;
+      }).join("");
       listDiv.querySelectorAll(".yt-shot-labeler-delete").forEach((btn) => {
         btn.onclick = function() {
           const idx = parseInt(btn.getAttribute("data-index"));
@@ -333,8 +399,9 @@
         alert("Please mark the start first!");
         return;
       }
-      if (!currentShot.label) {
-        alert("Please select a shot label!");
+      const hasAnyCategory = currentShot.label || currentShot.longitudinalPosition || currentShot.lateralPosition || currentShot.timing || currentShot.intention || currentShot.stroke || currentShot.impact || currentShot.direction;
+      if (!hasAnyCategory) {
+        alert("Please select at least one shot categorization!");
         return;
       }
       currentShot.end = video.currentTime;
@@ -344,7 +411,18 @@
       }
       shots.push({ ...currentShot });
       updateShotList();
-      currentShot = { start: null, end: null, label: null };
+      currentShot = {
+        start: null,
+        end: null,
+        label: null,
+        longitudinalPosition: null,
+        lateralPosition: null,
+        timing: null,
+        intention: null,
+        stroke: null,
+        impact: null,
+        direction: null
+      };
       updateStatus();
       setupGlossaryButtons(panel, () => currentShot, updateStatus);
     };

@@ -9,7 +9,18 @@ export function createLabelerPanel() {
   if (document.getElementById(PANEL_ID)) return;
 
   let shots = [];
-  let currentShot = { start: null, end: null, label: null };
+  let currentShot = { 
+    start: null, 
+    end: null, 
+    label: null,
+    longitudinalPosition: null,
+    lateralPosition: null,
+    timing: null,
+    intention: null,
+    stroke: null,
+    impact: null,
+    direction: null
+  };
 
   const now = new Date();
   const dateTimeStr = formatDateTime(now);
@@ -93,19 +104,34 @@ export function createLabelerPanel() {
 
   function updateStatus() {
     const status = panel.querySelector('#shot-status');
-    status.textContent = `Start: ${currentShot.start !== null ? currentShot.start.toFixed(2) + 's' : "-"} | End: ${currentShot.end !== null ? currentShot.end.toFixed(2) + 's' : "-"} | Label: ${currentShot.label ?? '-'}`;
+    const categorizations = [];
+    
+    if (currentShot.label) categorizations.push(`Label: ${currentShot.label}`);
+    if (currentShot.stroke) categorizations.push(`Stroke: ${currentShot.stroke}`);
+    if (currentShot.intention) categorizations.push(`Intent: ${currentShot.intention}`);
+    
+    const categorizationText = categorizations.length > 0 ? categorizations.join(' | ') : 'No categorizations';
+    status.textContent = `Start: ${currentShot.start !== null ? currentShot.start.toFixed(2) + 's' : "-"} | End: ${currentShot.end !== null ? currentShot.end.toFixed(2) + 's' : "-"} | ${categorizationText}`;
   }
 
   function updateShotList() {
     const listDiv = panel.querySelector('#label-list');
     listDiv.innerHTML = shots.length === 0
       ? `<div style="color:#999;">No shots labeled yet.</div>`
-      : shots.map((shot, i) =>
-        `<div style="display:flex;align-items:center;gap:6px;">
-          <div style="flex:1;">#${i + 1}: <b>${shot.label}</b> [${shot.start.toFixed(2)}s - ${shot.end.toFixed(2)}s]</div>
-          <button title="Delete" class="yt-shot-labeler-delete" data-index="${i}" style="background:transparent;border:none;cursor:pointer;font-size:15px;">🗑️</button>
-        </div>`
-      ).join("");
+      : shots.map((shot, i) => {
+          const categories = [];
+          if (shot.label) categories.push(shot.label);
+          if (shot.stroke) categories.push(shot.stroke);
+          if (shot.intention) categories.push(shot.intention);
+          if (shot.longitudinalPosition) categories.push(shot.longitudinalPosition);
+          
+          const categoryText = categories.length > 0 ? categories.join(', ') : 'Uncategorized';
+          
+          return `<div style="display:flex;align-items:center;gap:6px;">
+            <div style="flex:1;">#${i + 1}: <b>${categoryText}</b> [${shot.start.toFixed(2)}s - ${shot.end.toFixed(2)}s]</div>
+            <button title="Delete" class="yt-shot-labeler-delete" data-index="${i}" style="background:transparent;border:none;cursor:pointer;font-size:15px;">🗑️</button>
+          </div>`;
+        }).join("");
     listDiv.querySelectorAll('.yt-shot-labeler-delete').forEach(btn => {
       btn.onclick = function () {
         const idx = parseInt(btn.getAttribute('data-index'));
@@ -131,8 +157,13 @@ export function createLabelerPanel() {
     if (currentShot.start === null) {
       alert("Please mark the start first!"); return;
     }
-    if (!currentShot.label) {
-      alert("Please select a shot label!"); return;
+    // Check if at least one categorization is selected
+    const hasAnyCategory = currentShot.label || currentShot.longitudinalPosition || 
+                          currentShot.lateralPosition || currentShot.timing || 
+                          currentShot.intention || currentShot.stroke || 
+                          currentShot.impact || currentShot.direction;
+    if (!hasAnyCategory) {
+      alert("Please select at least one shot categorization!"); return;
     }
     currentShot.end = video.currentTime;
     if (currentShot.end <= currentShot.start) {
@@ -140,7 +171,18 @@ export function createLabelerPanel() {
     }
     shots.push({ ...currentShot });
     updateShotList();
-    currentShot = { start: null, end: null, label: null };
+    currentShot = { 
+      start: null, 
+      end: null, 
+      label: null,
+      longitudinalPosition: null,
+      lateralPosition: null,
+      timing: null,
+      intention: null,
+      stroke: null,
+      impact: null,
+      direction: null
+    };
     updateStatus();
     // --- Re-render label buttons for the new shot object so handlers are fresh ---
     setupGlossaryButtons(panel, () => currentShot, updateStatus);

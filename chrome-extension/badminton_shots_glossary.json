@@ -57,6 +57,68 @@
 				{ "id": 22, "term": "Drive",        "definition": "A fast and low shot that makes a horizontal flight over the net." }, 
 				{ "id": 23,  "term": "Block",        "definition": "A shot used to return a smash, directed softly and close to the net." }
 			]
+		},
+		{
+			"category": "Longitudinal Position",
+			"shots": [
+				{ "id": 24, "term": "front", "definition": "Front third of the court, usually from net back to around the service line" },
+				{ "id": 25, "term": "mid", "definition": "Middle third of the court, usually from around the service line back to around or somewhat in front of the first back line (doubles service back line)" },
+				{ "id": 26, "term": "rear", "definition": "Last (back) third of the court usually from around or somewhat in front of the first back line to the last back line (singles service back line)" }
+			]
+		},
+		{
+			"category": "Lateral Position",
+			"shots": [
+				{ "id": 27, "term": "backhand", "definition": "Left side of the court for right-handed players, right side for left-handed players" },
+				{ "id": 28, "term": "forehand", "definition": "Right side of the court for right-handed players, left side for left-handed players" },
+				{ "id": 29, "term": "middle", "definition": "Center area of the court between backhand and forehand sides" }
+			]
+		},
+		{
+			"category": "Timing",
+			"shots": [
+				{ "id": 30, "term": "early", "definition": "Shot taken before the shuttle reaches its optimal hitting position" },
+				{ "id": 31, "term": "normal", "definition": "Shot taken at the optimal timing when the shuttle is in the ideal hitting position" },
+				{ "id": 32, "term": "late", "definition": "Shot taken after the shuttle has passed its optimal hitting position" }
+			]
+		},
+		{
+			"category": "Intention",
+			"shots": [
+				{ "id": 33, "term": "offensive", "definition": "Aggressive shot intended to put pressure on the opponent or win the point" },
+				{ "id": 34, "term": "neutral", "definition": "Shot intended to maintain rally without attacking or defending" },
+				{ "id": 35, "term": "defensive", "definition": "Shot intended to return the shuttle safely and buy time to recover position" }
+			]
+		},
+		{
+			"category": "Stroke",
+			"shots": [
+				{ "id": 36, "term": "clear", "definition": "High, deep shot to the back of the court" },
+				{ "id": 37, "term": "drop", "definition": "Soft shot that falls close to the net" },
+				{ "id": 38, "term": "smash", "definition": "Hard, downward attacking shot" },
+				{ "id": 39, "term": "half-smash", "definition": "Medium-power attacking shot between a smash and clear" },
+				{ "id": 40, "term": "drive", "definition": "Fast, flat shot at mid-court level" },
+				{ "id": 41, "term": "push", "definition": "Controlled shot pushing the shuttle to opponent's midcourt" },
+				{ "id": 42, "term": "kill", "definition": "Fast downward shot for immediate winner" }
+			]
+		},
+		{
+			"category": "Impact",
+			"shots": [
+				{ "id": 43, "term": "full", "definition": "Clean contact with the full face of the racket" },
+				{ "id": 44, "term": "top-spin", "definition": "Inside-out racket motion creating forward rotation on the shuttle" },
+				{ "id": 45, "term": "back-spin", "definition": "Outside-in racket motion creating backward rotation on the shuttle" },
+				{ "id": 46, "term": "slice", "definition": "Angled racket face creating side spin and deception" },
+				{ "id": 47, "term": "reverse slice", "definition": "Opposite angled racket face creating reverse side spin" }
+			]
+		},
+		{
+			"category": "Direction",
+			"shots": [
+				{ "id": 48, "term": "straight", "definition": "Shot directed parallel to the sidelines" },
+				{ "id": 49, "term": "cross", "definition": "Shot directed diagonally across the court" },
+				{ "id": 50, "term": "middle", "definition": "Shot directed to the center of the court" }
+			]
 		}
 	]
 }
