@@ -6,32 +6,40 @@ export function setupGlossaryButtons(panel, getCurrentShot, updateStatus) {
   fetch(chrome.runtime.getURL('badminton_shots_glossary.json'))
     .then(r => r.json())
     .then(glossaryData => {
-      glossaryData.categories.forEach(category => {
-        const catSection = document.createElement('div');
-        catSection.className = "yt-shot-labeler-category-section";
-        const categoryHeader = document.createElement('div');
-        categoryHeader.textContent = category.category;
-        categoryHeader.className = "yt-shot-labeler-category-title";
-        catSection.appendChild(categoryHeader);
+      glossaryData.dimensions.forEach(dimension => {
+        const dimSection = document.createElement('div');
+        dimSection.className = "yt-shot-labeler-category-section";
+        const dimensionHeader = document.createElement('div');
+        dimensionHeader.textContent = dimension.term;
+        dimensionHeader.className = "yt-shot-labeler-category-title";
+        dimensionHeader.title = dimension.description;
+        dimSection.appendChild(dimensionHeader);
 
-        category.shots.forEach(shot => {
+        dimension.values.forEach(value => {
           const btn = document.createElement('button');
-          btn.textContent = shot.term;
+          btn.textContent = value.term;
           btn.className = "yt-shot-labeler-label-btn";
-          btn.title = shot.definition;
+          btn.title = value.description;
 
           btn.onclick = () => {
             const currentShot = getCurrentShot();
-            currentShot.label = shot.term;
-            labelDiv.querySelectorAll('button').forEach(b => b.classList.remove("selected"));
+            // Initialize dimensions object if it doesn't exist
+            if (!currentShot.dimensions) {
+              currentShot.dimensions = {};
+            }
+            // Store the selected value for this dimension
+            currentShot.dimensions[dimension.term] = value.term;
+            
+            // Remove selected class from all buttons in this dimension section
+            dimSection.querySelectorAll('button').forEach(b => b.classList.remove("selected"));
             btn.classList.add("selected");
             updateStatus();
           };
 
-          catSection.appendChild(btn);
+          dimSection.appendChild(btn);
         });
 
-        labelDiv.appendChild(catSection);
+        labelDiv.appendChild(dimSection);
       });
     });
 }

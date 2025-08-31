@@ -124,6 +124,13 @@
         const header = lines[0].split(",").map((s) => s.trim());
         const idxStart = header.indexOf("start_sec");
         const idxEnd = header.indexOf("end_sec");
+        const idxLongitudinal = header.indexOf("longitudinal_position");
+        const idxLateral = header.indexOf("lateral_position");
+        const idxTiming = header.indexOf("timing");
+        const idxIntention = header.indexOf("intention");
+        const idxStroke = header.indexOf("stroke");
+        const idxImpact = header.indexOf("impact");
+        const idxDirection = header.indexOf("direction");
         const idxLabel = header.indexOf("label");
         shots.length = 0;
         lines.slice(1).forEach((line) => {
@@ -137,12 +144,38 @@
             } else part += c;
           }
           parts.push(part);
-          if (!isNaN(parts[idxStart]) && !isNaN(parts[idxEnd]) && parts[idxLabel]) {
-            shots.push({
+          if (!isNaN(parts[idxStart]) && !isNaN(parts[idxEnd])) {
+            const shot = {
               start: parseFloat(parts[idxStart]),
-              end: parseFloat(parts[idxEnd]),
-              label: parts[idxLabel]?.replace(/^"|"$/g, "") ?? ""
-            });
+              end: parseFloat(parts[idxEnd])
+            };
+            if (idxLongitudinal >= 0 || idxLateral >= 0 || idxTiming >= 0 || idxIntention >= 0 || idxStroke >= 0 || idxImpact >= 0 || idxDirection >= 0) {
+              shot.dimensions = {};
+              if (idxLongitudinal >= 0 && parts[idxLongitudinal]?.replace(/^"|"$/g, "")) {
+                shot.dimensions["Longitudinal Position"] = parts[idxLongitudinal]?.replace(/^"|"$/g, "");
+              }
+              if (idxLateral >= 0 && parts[idxLateral]?.replace(/^"|"$/g, "")) {
+                shot.dimensions["Lateral Position"] = parts[idxLateral]?.replace(/^"|"$/g, "");
+              }
+              if (idxTiming >= 0 && parts[idxTiming]?.replace(/^"|"$/g, "")) {
+                shot.dimensions["Timing"] = parts[idxTiming]?.replace(/^"|"$/g, "");
+              }
+              if (idxIntention >= 0 && parts[idxIntention]?.replace(/^"|"$/g, "")) {
+                shot.dimensions["Intention"] = parts[idxIntention]?.replace(/^"|"$/g, "");
+              }
+              if (idxStroke >= 0 && parts[idxStroke]?.replace(/^"|"$/g, "")) {
+                shot.dimensions["Stroke"] = parts[idxStroke]?.replace(/^"|"$/g, "");
+              }
+              if (idxImpact >= 0 && parts[idxImpact]?.replace(/^"|"$/g, "")) {
+                shot.dimensions["Impact"] = parts[idxImpact]?.replace(/^"|"$/g, "");
+              }
+              if (idxDirection >= 0 && parts[idxDirection]?.replace(/^"|"$/g, "")) {
+                shot.dimensions["Direction"] = parts[idxDirection]?.replace(/^"|"$/g, "");
+              }
+            } else if (idxLabel >= 0 && parts[idxLabel]) {
+              shot.label = parts[idxLabel]?.replace(/^"|"$/g, "") ?? "";
+            }
+            shots.push(shot);
           }
         });
         updateShotList();
@@ -154,11 +187,28 @@
         alert("No labels to save!");
         return;
       }
-      let csv = "video_url,shot_id,start_sec,end_sec,label\n";
+      let csv = "video_url,shot_id,start_sec,end_sec,longitudinal_position,lateral_position,timing,intention,stroke,impact,direction\n";
       shots.forEach((shot, idx) => {
-        const safeLabel = `"${(shot.label ?? "").replace(/"/g, '""')}"`;
         const safeUrl = `"${videoUrl.replace(/"/g, '""')}"`;
-        csv += `${safeUrl},${idx + 1},${shot.start},${shot.end},${safeLabel}
+        let longitudinal = "";
+        let lateral = "";
+        let timing = "";
+        let intention = "";
+        let stroke = "";
+        let impact = "";
+        let direction = "";
+        if (shot.dimensions) {
+          longitudinal = shot.dimensions["Longitudinal Position"] || "";
+          lateral = shot.dimensions["Lateral Position"] || "";
+          timing = shot.dimensions["Timing"] || "";
+          intention = shot.dimensions["Intention"] || "";
+          stroke = shot.dimensions["Stroke"] || "";
+          impact = shot.dimensions["Impact"] || "";
+          direction = shot.dimensions["Direction"] || "";
+        } else if (shot.label) {
+          stroke = shot.label;
+        }
+        csv += `${safeUrl},${idx + 1},${shot.start},${shot.end},"${longitudinal}","${lateral}","${timing}","${intention}","${stroke}","${impact}","${direction}"
 `;
       });
       const blob = new Blob([csv], { type: "text/csv" });
@@ -179,28 +229,32 @@
     const labelDiv = panel.querySelector("#label-buttons");
     labelDiv.innerHTML = "";
     fetch(chrome.runtime.getURL("badminton_shots_glossary.json")).then((r) => r.json()).then((glossaryData) => {
-      glossaryData.categories.forEach((category) => {
-        const catSection = document.createElement("div");
-        catSection.className = "yt-shot-labeler-category-section";
-        const categoryHeader = document.createElement("div");
-        categoryHeader.textContent = category.category;
-        categoryHeader.className = "yt-shot-labeler-category-title";
-        catSection.appendChild(categoryHeader);
-        category.shots.forEach((shot) => {
+      glossaryData.dimensions.forEach((dimension) => {
+        const dimSection = document.createElement("div");
+        dimSection.className = "yt-shot-labeler-category-section";
+        const dimensionHeader = document.createElement("div");
+        dimensionHeader.textContent = dimension.term;
+        dimensionHeader.className = "yt-shot-labeler-category-title";
+        dimensionHeader.title = dimension.description;
+        dimSection.appendChild(dimensionHeader);
+        dimension.values.forEach((value) => {
           const btn = document.createElement("button");
-          btn.textContent = shot.term;
+          btn.textContent = value.term;
           btn.className = "yt-shot-labeler-label-btn";
-          btn.title = shot.definition;
+          btn.title = value.description;
           btn.onclick = () => {
             const currentShot = getCurrentShot();
-            currentShot.label = shot.term;
-            labelDiv.querySelectorAll("button").forEach((b) => b.classList.remove("selected"));
+            if (!currentShot.dimensions) {
+              currentShot.dimensions = {};
+            }
+            currentShot.dimensions[dimension.term] = value.term;
+            dimSection.querySelectorAll("button").forEach((b) => b.classList.remove("selected"));
             btn.classList.add("selected");
             updateStatus();
           };
-          catSection.appendChild(btn);
+          dimSection.appendChild(btn);
         });
-        labelDiv.appendChild(catSection);
+        labelDiv.appendChild(dimSection);
       });
     });
   }
@@ -210,7 +264,7 @@
     const PANEL_ID2 = "yt-shot-labeler-panel";
     if (document.getElementById(PANEL_ID2)) return;
     let shots = [];
-    let currentShot = { start: null, end: null, label: null };
+    let currentShot = { start: null, end: null, dimensions: {} };
     const now = /* @__PURE__ */ new Date();
     const dateTimeStr = formatDateTime(now);
     const videoTitle = getVideoTitle();
@@ -301,16 +355,30 @@
     addDragBehavior(panel);
     function updateStatus() {
       const status = panel.querySelector("#shot-status");
-      status.textContent = `Start: ${currentShot.start !== null ? currentShot.start.toFixed(2) + "s" : "-"} | End: ${currentShot.end !== null ? currentShot.end.toFixed(2) + "s" : "-"} | Label: ${currentShot.label ?? "-"}`;
+      let dimensionsStr = "";
+      if (currentShot.dimensions && Object.keys(currentShot.dimensions).length > 0) {
+        dimensionsStr = Object.entries(currentShot.dimensions).map(([dim, value]) => `${dim}: ${value}`).join(" | ");
+      } else {
+        dimensionsStr = "No dimensions selected";
+      }
+      status.textContent = `Start: ${currentShot.start !== null ? currentShot.start.toFixed(2) + "s" : "-"} | End: ${currentShot.end !== null ? currentShot.end.toFixed(2) + "s" : "-"} | ${dimensionsStr}`;
     }
     function updateShotList() {
       const listDiv = panel.querySelector("#label-list");
-      listDiv.innerHTML = shots.length === 0 ? `<div style="color:#999;">No shots labeled yet.</div>` : shots.map(
-        (shot, i) => `<div style="display:flex;align-items:center;gap:6px;">
-          <div style="flex:1;">#${i + 1}: <b>${shot.label}</b> [${shot.start.toFixed(2)}s - ${shot.end.toFixed(2)}s]</div>
+      listDiv.innerHTML = shots.length === 0 ? `<div style="color:#999;">No shots labeled yet.</div>` : shots.map((shot, i) => {
+        let shotDisplay = "";
+        if (shot.dimensions && Object.keys(shot.dimensions).length > 0) {
+          shotDisplay = Object.entries(shot.dimensions).map(([dim, value]) => `${value}`).join(", ");
+        } else if (shot.label) {
+          shotDisplay = shot.label;
+        } else {
+          shotDisplay = "No dimensions";
+        }
+        return `<div style="display:flex;align-items:center;gap:6px;">
+          <div style="flex:1;">#${i + 1}: <b>${shotDisplay}</b> [${shot.start.toFixed(2)}s - ${shot.end.toFixed(2)}s]</div>
           <button title="Delete" class="yt-shot-labeler-delete" data-index="${i}" style="background:transparent;border:none;cursor:pointer;font-size:15px;">\u{1F5D1}\uFE0F</button>
-        </div>`
-      ).join("");
+        </div>`;
+      }).join("");
       listDiv.querySelectorAll(".yt-shot-labeler-delete").forEach((btn) => {
         btn.onclick = function() {
           const idx = parseInt(btn.getAttribute("data-index"));
@@ -333,8 +401,8 @@
         alert("Please mark the start first!");
         return;
       }
-      if (!currentShot.label) {
-        alert("Please select a shot label!");
+      if (!currentShot.dimensions || Object.keys(currentShot.dimensions).length === 0) {
+        alert("Please select values for shot dimensions!");
         return;
       }
       currentShot.end = video.currentTime;
@@ -344,7 +412,7 @@
       }
       shots.push({ ...currentShot });
       updateShotList();
-      currentShot = { start: null, end: null, label: null };
+      currentShot = { start: null, end: null, dimensions: {} };
       updateStatus();
       setupGlossaryButtons(panel, () => currentShot, updateStatus);
     };

@@ -1,61 +1,80 @@
 {
 	"attribution": "Adapted and modified from https://www.worldbadminton.com/glossary.htm",
-	"categories": [
+	"dimensions": [
 		{
-			"category": "Serve",
-			"shots": [
-				{ "id": 1,  "term": "Short",  "definition": "A serve that barely clears the net and lands just inside the receiver's service court." },
-				{ "id": 2,  "term": "Flick",  "definition": "A serve used in doubles, using a quick flick of the wrist to send the shuttle high and deep." },
-				{ "id": 3,  "term": "Drive",  "definition": "A serve hit flat and fast, skimming low over the net." },
-				{ "id": 4,  "term": "Long (High)",   "definition": "A serve hit deep into the back boundary line of the receiver's court." },
-				{ "id": 5,  "term": "Spin",   "definition": "A serve that imparts spin to the shuttle, making it unpredictable to return." }
+			"dim_id": 1,
+			"term": "Longitudinal Position",
+			"description": "The longitudinal (front to back/rear) position to where the opponent placed their shot, thus to where the player has to move and from where the player has to play the shot.",
+			"values": [
+				{ "long_pos_id": 1, "term": "front", "description": "front third of the court, usually from net back to around the service line" },
+				{ "long_pos_id": 2, "term": "mid", "description": "middle third of the court, usually from around the service line back to around or somewhat in front of the first back line (doubles service back line)" },
+				{ "long_pos_id": 3, "term": "rear", "description": "last (back) third of the court usually from around or somewhat in front of the first back line to the last back line (singles service back line)" }
 			]
 		},
 		{
-			"category": "Clear",
-			"shots": [
-				{ "id": 6,  "term": "Normal",     "definition": "A shot hit deep to the opponent's back boundary line. The high clear is a defensive shot, while the flatter attacking clear is used offensively." },
-				{ "id": 7,  "term": "Defensive (High)",  "definition": "A high, deep clear shot used to move the opponent back and gain time to recover position." },
-				{ "id": 8,  "term": "Offensive (Punch, Flat)",  "definition": "A clear hit with speed and flat trajectory to pressure the opponent." }
+			"dim_id": 2,
+			"term": "Lateral Position",
+			"description": "The lateral (side to side) position where the player receives and plays the shot from.",
+			"values": [
+				{ "lat_pos_id": 1, "term": "backhand", "description": "shot played from the backhand side of the player" },
+				{ "lat_pos_id": 2, "term": "forehand", "description": "shot played from the forehand side of the player" },
+				{ "lat_pos_id": 3, "term": "middle", "description": "shot played from the middle/center position" }
 			]
 		},
 		{
-			"category": "Lift",
-			"shots": [
-				{ "id": 9,   "term": "Normal",      "definition": "A shot that sends the shuttle high and deep into the opponent's court." },
-				{ "id": 10,  "term": "Flat",        "definition": "A shot that sends the shuttle high and deep into the opponent's court." }
-			]
-		},	
-		{
-			"category": "Drop",
-			"shots": [
-				{ "id": 11, "term": "Normal",    "definition": "A shot hit softly and with finesse to fall rapidly and close to the net on the opponent's side." }, 
-				{ "id": 12, "term": "Slice",   "definition": "A deceptive shot where the shuttle is sliced with the racket to reduce its speed and alter its direction." },
-				{ "id": 13, "term": "Stop (Yong-Bo)",           "definition": "A shot hit softly and with finesse to fall rapidly and close to the net on the opponent's side." }
-			]
-		},	
-		{
-			"category": "Net Shot",
-			"shots": [
-				{ "id": 14, "term": "Normal",     "definition": "Shot played from the forecourt close to the net that just clears the net and drops sharply." },
-				{ "id": 15, "term": "Hairpin",      "definition": "A shot made from below and very close to the net, causing the shuttle to rise, just clear the net, and drop sharply down the other side; named because the shuttle's path resembles the shape of a hairpin." }, 
-				{ "id": 16, "term": "Spin",    "definition": "A net shot with spin to the shuttle, making it unpredictable to return." }
+			"dim_id": 3,
+			"term": "Timing",
+			"description": "The timing of when the shot is played relative to the optimal contact point.",
+			"values": [
+				{ "timing_id": 1, "term": "early", "description": "shot played before the optimal contact point" },
+				{ "timing_id": 2, "term": "normal", "description": "shot played at the optimal contact point" },
+				{ "timing_id": 3, "term": "late", "description": "shot played after the optimal contact point" }
 			]
 		},
 		{
-			"category": "Smash & Kill",
-			"shots": [
-				{ "id": 17, "term": "Smash",          "definition": "A hard-hit overhead shot that forces the shuttle sharply downward; badminton's primary attacking stroke." }, 
-				{ "id": 18, "term": "Half Smash",          "definition": "A hard-hit overhead shot that forces the shuttle sharply downward; badminton's primary attacking stroke." }, 
-				{ "id": 19,  "term": "(Net) Kill",           "definition": "Fast, downward shot that cannot be returned; a 'putaway'." },
-				{ "id": 20, "term": "Push",    "definition": "An offensive shot played by pushing the shuttle with a controlled motion, usually from net to the opponent's midcourt or body." }
+			"dim_id": 4,
+			"term": "Intention",
+			"description": "The tactical intention or purpose behind the shot being played.",
+			"values": [
+				{ "intention_id": 1, "term": "offensive", "description": "shot played with attacking intent to put pressure on opponent" },
+				{ "intention_id": 2, "term": "neutral", "description": "shot played to maintain rally or position" },
+				{ "intention_id": 3, "term": "defensive", "description": "shot played to defend or recover from a difficult position" }
 			]
 		},
 		{
-			"category": "Drive & Block",
-			"shots": [
-				{ "id": 22, "term": "Drive",        "definition": "A fast and low shot that makes a horizontal flight over the net." }, 
-				{ "id": 23,  "term": "Block",        "definition": "A shot used to return a smash, directed softly and close to the net." }
+			"dim_id": 5,
+			"term": "Stroke",
+			"description": "The type of badminton stroke or shot technique used.",
+			"values": [
+				{ "stroke_id": 1, "term": "clear", "description": "A shot hit deep to the opponent's back boundary line" },
+				{ "stroke_id": 2, "term": "drop", "description": "A shot hit softly and with finesse to fall rapidly and close to the net on the opponent's side" },
+				{ "stroke_id": 3, "term": "smash", "description": "A hard-hit overhead shot that forces the shuttle sharply downward; badminton's primary attacking stroke" },
+				{ "stroke_id": 4, "term": "half-smash", "description": "A smash hit with less power and at a flatter angle" },
+				{ "stroke_id": 5, "term": "drive", "description": "A fast and low shot that makes a horizontal flight over the net" },
+				{ "stroke_id": 6, "term": "push", "description": "An offensive shot played by pushing the shuttle with a controlled motion, usually from net to the opponent's midcourt or body" },
+				{ "stroke_id": 7, "term": "kill", "description": "Fast, downward shot that cannot be returned; a 'putaway'" }
+			]
+		},
+		{
+			"dim_id": 6,
+			"term": "Impact",
+			"description": "The type of contact made with the shuttle at impact.",
+			"values": [
+				{ "impact_id": 1, "term": "full", "description": "full, clean contact with the shuttle" },
+				{ "impact_id": 2, "term": "top-spin (inside-out)", "description": "contact that imparts top-spin rotation to the shuttle" },
+				{ "impact_id": 3, "term": "back-spin (outside-in)", "description": "contact that imparts back-spin rotation to the shuttle" },
+				{ "impact_id": 4, "term": "slice", "description": "contact that cuts across the shuttle creating slice effect" },
+				{ "impact_id": 5, "term": "reverse slice", "description": "contact that cuts across the shuttle in reverse direction" }
+			]
+		},
+		{
+			"dim_id": 7,
+			"term": "Direction",
+			"description": "The direction or target area where the shot is aimed.",
+			"values": [
+				{ "direction_id": 1, "term": "straight", "description": "shot played straight down the line" },
+				{ "direction_id": 2, "term": "cross", "description": "shot played diagonally across the court" },
+				{ "direction_id": 3, "term": "middle", "description": "shot played towards the center of the court" }
 			]
 		}
 	]

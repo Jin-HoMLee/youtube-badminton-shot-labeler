@@ -9,7 +9,7 @@ export function createLabelerPanel() {
   if (document.getElementById(PANEL_ID)) return;
 
   let shots = [];
-  let currentShot = { start: null, end: null, label: null };
+  let currentShot = { start: null, end: null, dimensions: {} };
 
   const now = new Date();
   const dateTimeStr = formatDateTime(now);
@@ -93,19 +93,34 @@ export function createLabelerPanel() {
 
   function updateStatus() {
     const status = panel.querySelector('#shot-status');
-    status.textContent = `Start: ${currentShot.start !== null ? currentShot.start.toFixed(2) + 's' : "-"} | End: ${currentShot.end !== null ? currentShot.end.toFixed(2) + 's' : "-"} | Label: ${currentShot.label ?? '-'}`;
+    let dimensionsStr = '';
+    if (currentShot.dimensions && Object.keys(currentShot.dimensions).length > 0) {
+      dimensionsStr = Object.entries(currentShot.dimensions).map(([dim, value]) => `${dim}: ${value}`).join(' | ');
+    } else {
+      dimensionsStr = 'No dimensions selected';
+    }
+    status.textContent = `Start: ${currentShot.start !== null ? currentShot.start.toFixed(2) + 's' : "-"} | End: ${currentShot.end !== null ? currentShot.end.toFixed(2) + 's' : "-"} | ${dimensionsStr}`;
   }
 
   function updateShotList() {
     const listDiv = panel.querySelector('#label-list');
     listDiv.innerHTML = shots.length === 0
       ? `<div style="color:#999;">No shots labeled yet.</div>`
-      : shots.map((shot, i) =>
-        `<div style="display:flex;align-items:center;gap:6px;">
-          <div style="flex:1;">#${i + 1}: <b>${shot.label}</b> [${shot.start.toFixed(2)}s - ${shot.end.toFixed(2)}s]</div>
+      : shots.map((shot, i) => {
+          let shotDisplay = '';
+          if (shot.dimensions && Object.keys(shot.dimensions).length > 0) {
+            shotDisplay = Object.entries(shot.dimensions).map(([dim, value]) => `${value}`).join(', ');
+          } else if (shot.label) {
+            // Backward compatibility with old label format
+            shotDisplay = shot.label;
+          } else {
+            shotDisplay = 'No dimensions';
+          }
+          return `<div style="display:flex;align-items:center;gap:6px;">
+          <div style="flex:1;">#${i + 1}: <b>${shotDisplay}</b> [${shot.start.toFixed(2)}s - ${shot.end.toFixed(2)}s]</div>
           <button title="Delete" class="yt-shot-labeler-delete" data-index="${i}" style="background:transparent;border:none;cursor:pointer;font-size:15px;">🗑️</button>
         </div>`
-      ).join("");
+        }).join("");
     listDiv.querySelectorAll('.yt-shot-labeler-delete').forEach(btn => {
       btn.onclick = function () {
         const idx = parseInt(btn.getAttribute('data-index'));
@@ -131,8 +146,8 @@ export function createLabelerPanel() {
     if (currentShot.start === null) {
       alert("Please mark the start first!"); return;
     }
-    if (!currentShot.label) {
-      alert("Please select a shot label!"); return;
+    if (!currentShot.dimensions || Object.keys(currentShot.dimensions).length === 0) {
+      alert("Please select values for shot dimensions!"); return;
     }
     currentShot.end = video.currentTime;
     if (currentShot.end <= currentShot.start) {
@@ -140,7 +155,7 @@ export function createLabelerPanel() {
     }
     shots.push({ ...currentShot });
     updateShotList();
-    currentShot = { start: null, end: null, label: null };
+    currentShot = { start: null, end: null, dimensions: {} };
     updateStatus();
     // --- Re-render label buttons for the new shot object so handlers are fresh ---
     setupGlossaryButtons(panel, () => currentShot, updateStatus);
